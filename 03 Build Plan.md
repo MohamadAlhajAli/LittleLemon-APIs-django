@@ -3,11 +3,11 @@
 **Companions:** `01 SRS - Software Requirements Specification.md` and `02 Design Document.md`
 **Version:** 1.2
 **Reviewed:** 2026-09-23
-**Status:** Planning complete; all implementation steps unstarted
+**Status:** Step 0 in progress; feature implementation not started
 
 **How we will work:** explain one small behavior, write and run a failing test, implement the minimum to pass, then refactor with tests passing. Work through one step at a time and pause for your next instruction. Each feature also practices the GitHub issue → branch → commit → pull request → review → merge workflow. Step 12 is a final audit; tests lead development from Step 1 onward.
 
-The SRS defines behavior. If a course requirement changes a decision, update all three documents before implementing the affected feature. The snippets below are instructions for later work; nothing in this plan has been executed yet.
+The SRS defines behavior. If a course requirement changes a decision, update all three documents before implementing the affected feature. The tracker and recorded evidence identify completed work; the remaining snippets describe work still to do.
 
 ---
 
@@ -15,7 +15,7 @@ The SRS defines behavior. If a course requirement changes a decision, update all
 
 | Step | Title | Depends on | Status | Evidence |
 |---|---|---|---|---|
-| 0 | Environment and scaffold | — | ☐ Not started | — |
+| 0 | Environment and scaffold | — | In progress | Python 3.14.4, Django 5.2.17; system check and initial migrations pass; no migration drift; runner discovers 0 tests as expected |
 | 1 | Models, migrations, admin | 0 | ☐ Not started | — |
 | 2 | Djoser registration, tokens, login page | 1 | ☐ Not started | — |
 | 3 | Roles and permissions | 1, 2 | ☐ Not started | — |
@@ -47,7 +47,7 @@ Use Django TestCase/APITestCase and plain unittest assertions initially. Avoid a
 
 ## GitHub Practice Before Step 0
 
-**Repository setup progress:** this folder is connected to [LittleLemon-APIs-django](https://github.com/MohamadAlhajAli/LittleLemon-APIs-django), with `main` tracking `origin/main`. The existing README history was preserved. The three planning documents were committed on `docs/project-planning` and submitted in [PR #1](https://github.com/MohamadAlhajAli/LittleLemon-APIs-django/pull/1); merge is still pending. Git is installed; the `gh` CLI was not found on PATH. We use Git Bash and the GitHub website. Root ignore rules, issue/PR templates and the Step 0 issue remain to be added.
+**Repository setup progress:** this folder is connected to [LittleLemon-APIs-django](https://github.com/MohamadAlhajAli/LittleLemon-APIs-django), with `main` tracking `origin/main`. [PR #1](https://github.com/MohamadAlhajAli/LittleLemon-APIs-django/pull/1) was merged with merge commit `38d4207`, preserving the existing README history. [Issue #2](https://github.com/MohamadAlhajAli/LittleLemon-APIs-django/issues/2) tracks Step 0 on `chore/2-project-scaffold`. Root ignore rules, the Django scaffold, local environment configuration and test package are prepared; the browser startup check, issue/PR templates, CI and scaffold PR remain. Git is installed; the `gh` CLI was not found on PATH. We use Git Bash and the GitHub website.
 
 **Guided practice:** explain each command, what it changes and what output to inspect. Give the user small command batches to execute and help interpret the output. Keep GitHub exercises visible instead of silently completing the entire collaboration workflow. The user can ask the assistant to execute a batch when preferred.
 
@@ -521,4 +521,4 @@ Debug Toolbar is an optional aid for suitable HTML responses; automated query me
 - ☐ Application behaviors were developed through observed Red → Green → Refactor cycles
 - ☐ GitHub issues, branches, reviewed PRs and passing CI record the development history
 
-**Next action:** finish reviewing and merging PR #1, sync local `main`, then create the Step 0 issue and complete the remaining repository setup on a new branch.
+**Next action:** verify the development server in the browser, then add issue/PR templates and CI before submitting the scaffold PR for issue #2. Do not mark Step 0 complete until its remaining acceptance checks pass.
