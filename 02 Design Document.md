@@ -3,7 +3,7 @@
 **Companion to:** `01 SRS - Software Requirements Specification.md`
 **Version:** 1.2
 **Reviewed:** 2026-09-23
-**Status:** Implementation design; no application code has been created
+**Status:** Implementation design; Step 0 scaffold in progress
 
 The SRS owns the behavioral contract. Code sketches here explain implementation choices; the build plan introduces them incrementally.
 
@@ -401,4 +401,4 @@ Do not add a knowingly broken Django workflow to the initial documentation-only 
 | Course compatibility | Step 0 checks available rubric/model requirements; record differences, especially expanded decimals and deletion policies |
 | Reproducibility | Record Python/package versions, setup commands and timezone; commit migrations and lockfile; exclude local database, credentials and environments |
 
-The build plan is the implementation sequence. This review changes documents only; Step 0 remains unstarted.
+The build plan records implementation progress. Step 0 has a Django scaffold and local setup checks; API features remain unimplemented.

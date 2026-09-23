@@ -3,7 +3,7 @@
 **Project:** Little Lemon Restaurant API
 **Django app:** `LittleLemonAPI`
 **Version:** 1.2
-**Status:** Reviewed implementation baseline; implementation not started
+**Status:** Reviewed implementation baseline; Step 0 scaffold in progress
 **Reviewed:** 2026-09-23
 
 **Document order:** this SRS defines behavior; `02 Design Document.md` explains implementation; `03 Build Plan.md` defines the learning sequence. Changes to behavior must be reflected in all three.
@@ -319,4 +319,4 @@ These decisions resolve gaps in version 1.0. Keep them synchronized with the des
 | Pagination | Default ordering: menu/group `id`, orders `-date,-id`. Positive `perpage` values over 100 are capped; malformed/nonpositive `perpage` returns **400**. Invalid/nonpositive/out-of-range `page` returns **404**. Empty page 1 is valid. |
 | Error bodies | Field validation uses field-name keys and message lists; general errors use `detail` or `non_field_errors`. Error prose need not be byte-identical except where a response is explicitly specified. |
 
-**Learning workflow:** implementation proceeds one step at a time, using the Red → Green → Refactor cycle. Each small feature is linked to a GitHub issue, developed on a short-lived branch, and reviewed through a pull request with passing checks before merge. Explain Git commands and their effects so the user can practice them. Record test evidence and pause before the next step. Repository setup precedes Step 0; all implementation steps remain unstarted after this document review. Details are in the Build Plan's TDD and GitHub workflow sections.
+**Learning workflow:** implementation proceeds one step at a time, using the Red → Green → Refactor cycle. Each small feature is linked to a GitHub issue, developed on a short-lived branch, and reviewed through a pull request with passing checks before merge. Explain Git commands and their effects so the user can practice them. Record test evidence and pause before the next step. Repository setup precedes Step 0; the Build Plan tracker records progress. Details are in the Build Plan's TDD and GitHub workflow sections.
