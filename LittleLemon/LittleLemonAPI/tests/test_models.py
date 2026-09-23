@@ -99,5 +99,121 @@ class MenuItemModelTests(TestCase):
         self.assertEqual(str(menu_item), 'Grilled fish')
 
 
+from decimal import Decimal
+
+from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
+from django.test import TestCase
+
+from LittleLemonAPI import models
+
+
+class CartModelTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="customer",
+        )
+        self.category = models.Category.objects.create(
+            title="Main courses",
+            slug="main-courses",
+        )
+        self.menu_item = models.MenuItem.objects.create(
+            title="Grilled fish",
+            price=Decimal("15.50"),
+            category=self.category,
+        )
+
+    def make_cart(self, **overrides):
+        values = {
+            "user": self.user,
+            "menuitem": self.menu_item,
+            "quantity": 2,
+            "unit_price": Decimal("15.50"),
+            "price": Decimal("31.00"),
+        }
+        values.update(overrides)
+        return models.Cart.objects.create(**values)
+
+    def test_cart_can_be_saved_and_loaded(self):
+        cart = self.make_cart()
+        cart.refresh_from_db()
+
+        self.assertEqual(cart.user_id, self.user.pk)
+        self.assertEqual(cart.menuitem_id, self.menu_item.pk)
+        self.assertEqual(cart.quantity, 2)
+        self.assertEqual(cart.unit_price, Decimal("15.50"))
+        self.assertEqual(cart.price, Decimal("31.00"))
+
+    def test_user_cannot_have_duplicate_menu_item_rows(self):
+        self.make_cart()
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self.make_cart()
+
+    def test_other_users_can_add_the_same_menu_item(self):
+        self.make_cart()
+        other_user = get_user_model().objects.create_user(
+            username="other-customer",
+        )
+
+        other_cart = self.make_cart(user=other_user)
+
+        self.assertEqual(other_cart.user_id, other_user.pk)
+        self.assertEqual(models.Cart.objects.count(), 2)
+
+    def test_invalid_values_are_rejected(self):
+        invalid_values = [
+            ("quantity", -1),
+            ("quantity", 0),
+            ("quantity", 101),
+            ("unit_price", Decimal("-0.01")),
+            ("unit_price", Decimal("10000.00")),
+            ("price", Decimal("-0.01")),
+        ]
+
+        for field, value in invalid_values:
+            with self.subTest(field=field, value=value):
+                with self.assertRaises(IntegrityError):
+                    with transaction.atomic():
+                        self.make_cart(**{field: value})
+
+    def test_valid_boundaries_are_supported(self):
+        valid_values = [
+            (1, Decimal("0.00"), Decimal("0.00")),
+            (100, Decimal("9999.99"), Decimal("999999.00")),
+        ]
+
+        for quantity, unit_price, price in valid_values:
+            with self.subTest(quantity=quantity):
+                cart = self.make_cart(
+                    quantity=quantity,
+                    unit_price=unit_price,
+                    price=price,
+                )
+                cart.refresh_from_db()
+
+                self.assertEqual(cart.quantity, quantity)
+                self.assertEqual(cart.unit_price, unit_price)
+                self.assertEqual(cart.price, price)
+
+                cart.delete()
+
+    def test_deleting_user_removes_their_cart(self):
+        cart = self.make_cart()
+        cart_id = cart.pk
+
+        self.user.delete()
+
+        self.assertFalse(models.Cart.objects.filter(pk=cart_id).exists())
+
+    def test_deleting_menu_item_removes_its_cart_rows(self):
+        cart = self.make_cart()
+        cart_id = cart.pk
+
+        self.menu_item.delete()
+
+        self.assertFalse(models.Cart.objects.filter(pk=cart_id).exists())
+
 
 
