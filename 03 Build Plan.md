@@ -47,7 +47,7 @@ Use Django TestCase/APITestCase and plain unittest assertions initially. Avoid a
 
 ## GitHub Practice Before Step 0
 
-**Current local finding:** Git is installed; this folder is not a Git repository. The `gh` CLI was not found on PATH. The user has already created a remote repository; its URL and contents must be inspected before connecting it. Git plus the GitHub website is sufficient for the exercises.
+**Repository setup progress:** this folder is connected to [LittleLemon-APIs-django](https://github.com/MohamadAlhajAli/LittleLemon-APIs-django), with `main` tracking `origin/main`. The existing README history was preserved. The three planning documents were committed on `docs/project-planning` and submitted in [PR #1](https://github.com/MohamadAlhajAli/LittleLemon-APIs-django/pull/1); merge is still pending. Git is installed; the `gh` CLI was not found on PATH. We use Git Bash and the GitHub website. Root ignore rules, issue/PR templates and the Step 0 issue remain to be added.
 
 **Guided practice:** explain each command, what it changes and what output to inspect. Give the user small command batches to execute and help interpret the output. Keep GitHub exercises visible instead of silently completing the entire collaboration workflow. The user can ask the assistant to execute a batch when preferred.
 
@@ -89,7 +89,7 @@ Practice merge conflicts, revert and releases when real changes make those lesso
 
 ## Shared Working Rules
 
-- Commands assume PowerShell. Run setup from the project folder, then use `LittleLemon/` as the working directory for `manage.py` commands.
+- Commands assume Git Bash on Windows. Run setup from the project folder, then use `LittleLemon/` as the working directory for `manage.py` commands.
 - Prefer `pipenv run ...` so commands always use the intended environment; an interactive `pipenv shell` is optional.
 - Maintain one `REST_FRAMEWORK` settings dictionary; add settings without replacing previous ones.
 - Business URLs and registration have no trailing slash. Login and current-user routes use the exact trailing slashes specified in the SRS.
@@ -110,9 +110,9 @@ Practice merge conflicts, revert and releases when real changes make those lesso
 3. Prefer Django 5.2 LTS with compatible dependencies. If a course environment requires another version, record the reason and adjust the lockfile intentionally.
 4. Create the application directory and scaffold. These example commands assume the version decision above is confirmed:
 
-   ```powershell
-   New-Item -ItemType Directory -Path LittleLemon
-   Set-Location LittleLemon
+   ```bash
+   mkdir LittleLemon
+   cd LittleLemon
    pipenv install 'Django>=5.2,<5.3' djangorestframework djoser django-filter
    pipenv run django-admin startproject LittleLemon .
    pipenv run python manage.py startapp LittleLemonAPI
@@ -136,7 +136,7 @@ Practice merge conflicts, revert and releases when real changes make those lesso
 
 **Verify**
 
-```powershell
+```bash
 pipenv run python manage.py migrate
 pipenv run python manage.py check
 pipenv run python manage.py runserver
@@ -170,7 +170,7 @@ pipenv run python manage.py runserver
 
 **Verify**
 
-```powershell
+```bash
 pipenv run python manage.py makemigrations LittleLemonAPI
 pipenv run python manage.py migrate
 pipenv run python manage.py check
@@ -484,7 +484,7 @@ Use a manual `Authorization: Token ...` header in Postman/Insomnia. A Bearer hea
 
 **Verify**
 
-```powershell
+```bash
 pipenv run python manage.py check
 pipenv run python manage.py makemigrations --check --dry-run
 pipenv run python manage.py test
@@ -521,4 +521,4 @@ Debug Toolbar is an optional aid for suitable HTML responses; automated query me
 - ☐ Application behaviors were developed through observed Red → Green → Refactor cycles
 - ☐ GitHub issues, branches, reviewed PRs and passing CI record the development history
 
-**Next action:** inspect the user's repository URL and work through the repository setup checkpoint; then begin Step 0 when requested.
+**Next action:** finish reviewing and merging PR #1, sync local `main`, then create the Step 0 issue and complete the remaining repository setup on a new branch.
