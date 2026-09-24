@@ -299,8 +299,7 @@ class OrderModelTests(TestCase):
         )
 
 
-class OrderItemModelTests(TestCase): 
-    
+class OrderItemModelTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username="customer",
@@ -348,7 +347,7 @@ class OrderItemModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 self.make_order_item()
-    
+
     def test_same_menu_item_can_appear_in_different_orders(self):
         first_item = self.make_order_item()
         other_order = models.Order.objects.create(
@@ -361,38 +360,19 @@ class OrderItemModelTests(TestCase):
         self.assertNotEqual(first_item.pk, second_item.pk)
         self.assertEqual(first_item.menuitem, second_item.menuitem)
 
-   
+    def test_invalid_quantities_and_prices_are_rejected(self):
+        invalid_values = [
+            {"quantity": -1},
+            {"quantity": 0},
+            {"quantity": 101},
+            {"unit_price": Decimal("-0.01")},
+            {"unit_price": Decimal("10000.00")},
+            {"price": Decimal("-0.01")},
+        ]
 
+        for overrides in invalid_values:
+            with self.subTest(overrides=overrides):
+                with self.assertRaises(IntegrityError):
+                    with transaction.atomic():
+                        self.make_order_item(**overrides)
 
-        self.assertTrue(
-            models.Order.objects.filter(pk=order.pk).exists()
-        )
-        self.assertTrue(
-            get_user_model().objects.filter(pk=self.user.pk).exists()
-        )
-
-    def test_deleting_delivery_user_clears_assignment(self):
-        order = self.make_order(delivery_crew=self.crew)
-
-        self.crew.delete()
-        order.refresh_from_db()
-
-        self.assertIsNone(order.delivery_crew)
-        self.assertEqual(order.user_id, self.user.pk)
-        self.assertEqual(order.total, Decimal("31.00"))
-
-    def test_deleting_order_preserves_both_users(self):
-        order = self.make_order(delivery_crew=self.crew)
-        order_id = order.pk
-
-        order.delete()
-
-        self.assertFalse(
-            models.Order.objects.filter(pk=order_id).exists()
-        )
-        self.assertTrue(
-            get_user_model().objects.filter(pk=self.user.pk).exists()
-        )
-        self.assertTrue(
-            get_user_model().objects.filter(pk=self.crew.pk).exists()
-        )
