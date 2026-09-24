@@ -10,6 +10,9 @@ class Category(models.Model):
     title = models.CharField(max_length=255, db_index=True)
     slug = models.SlugField(unique=True) 
 
+    class Meta: 
+        verbose_name_plural = "categories"
+
     def __str__(self): 
         return self.title
 
