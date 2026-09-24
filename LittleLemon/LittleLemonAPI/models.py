@@ -111,8 +111,52 @@ class Order(models.Model):
             ),
         ]
 
-class OrderItem(models.Model): 
-    pass 
+class OrderItem(models.Model):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+    menuitem = models.ForeignKey(
+        MenuItem,
+        on_delete=models.PROTECT,
+    )
+    quantity = models.PositiveSmallIntegerField()
+    unit_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+    )
+    price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "menuitem"],
+                name="orderitem_unique_order_menuitem",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(
+                    quantity__gte=1,
+                    quantity__lte=100,
+                ),
+                name="orderitem_quantity_range",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(
+                    unit_price__gte=Decimal("0.00"),
+                    unit_price__lte=Decimal("9999.99"),
+                ),
+                name="orderitem_unit_price_range",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(price__gte=Decimal("0.00")),
+                name="orderitem_price_nonnegative",
+            ),
+        ]
+        
 
 
 
