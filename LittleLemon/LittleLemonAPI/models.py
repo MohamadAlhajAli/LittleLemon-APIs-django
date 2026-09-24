@@ -1,8 +1,8 @@
-from time import timezone
+from decimal import Decimal
+
+from django.conf import settings
 from django.db import models
-from django.conf import settings 
 from django.utils import timezone
-from decimal import Decimal 
 
 # Create your models here.
 
