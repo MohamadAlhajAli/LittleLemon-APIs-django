@@ -1,6 +1,7 @@
+from time import timezone
 from django.db import models
 from django.conf import settings 
-
+from django.utils import timezone
 from decimal import Decimal 
 
 # Create your models here.
@@ -82,7 +83,33 @@ class Cart(models.Model):
             ),
         ]
 
+class Order(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="orders",
+    )
+    delivery_crew = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="assigned_orders",
+        null=True,
+        blank=True,
+    )
+    status = models.BooleanField(default=False, db_index=True)
+    total = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField(
+        default=timezone.localdate,
+        db_index=True,
+    )
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(total__gte=Decimal("0.00")),
+                name="order_total_nonnegative",
+            ),
+        ]
 
 
 
