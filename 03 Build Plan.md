@@ -15,9 +15,9 @@ The SRS defines behavior. If a course requirement changes a decision, update all
 
 | Step | Title | Depends on | Status | Evidence |
 |---|---|---|---|---|
-| 0 | Environment and scaffold | — | In progress | Python 3.14.4, Django 5.2.17; system check and initial migrations pass; no migration drift; runner discovers 0 tests as expected |
-| 1 | Models, migrations, admin | 0 | ☐ Not started | — |
-| 2 | Djoser registration, tokens, login page | 1 | ☐ Not started | — |
+| 0 | Environment and scaffold | — | Completed | Python 3.14.4, Django 5.2.17; system check and initial migrations pass; no migration drift; runner discovers 0 tests as expected |
+| 1 | Models, migrations, admin | 0 | Completed | — |
+| 2 | Djoser registration, tokens, login page | 1 | In Progress | — |
 | 3 | Roles and permissions | 1, 2 | ☐ Not started | — |
 | 4 | Menu endpoints | 1, 3 | ☐ Not started | — |
 | 5 | Group management | 3 | ☐ Not started | — |
