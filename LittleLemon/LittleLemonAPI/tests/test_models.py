@@ -299,8 +299,7 @@ class OrderModelTests(TestCase):
         )
 
 
-class OrderItemModelTests(TestCase): 
-    
+class OrderItemModelTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username="customer",
@@ -348,7 +347,7 @@ class OrderItemModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 self.make_order_item()
-    
+
     def test_same_menu_item_can_appear_in_different_orders(self):
         first_item = self.make_order_item()
         other_order = models.Order.objects.create(
@@ -360,26 +359,6 @@ class OrderItemModelTests(TestCase):
 
         self.assertNotEqual(first_item.pk, second_item.pk)
         self.assertEqual(first_item.menuitem, second_item.menuitem)
-
-   
-
-
-        self.assertTrue(
-            models.Order.objects.filter(pk=order.pk).exists()
-        )
-        self.assertTrue(
-            get_user_model().objects.filter(pk=self.user.pk).exists()
-        )
-
-    def test_deleting_delivery_user_clears_assignment(self):
-        order = self.make_order(delivery_crew=self.crew)
-
-        self.crew.delete()
-        order.refresh_from_db()
-
-        self.assertIsNone(order.delivery_crew)
-        self.assertEqual(order.user_id, self.user.pk)
-        self.assertEqual(order.total, Decimal("31.00"))
 
     def test_invalid_quantities_and_prices_are_rejected(self):
         invalid_values = [
@@ -396,3 +375,66 @@ class OrderItemModelTests(TestCase):
                 with self.assertRaises(IntegrityError):
                     with transaction.atomic():
                         self.make_order_item(**overrides)
+
+    def test_valid_quantity_and_price_boundaries_are_allowed(self):
+        valid_values = [
+            {
+                "quantity": 1,
+                "unit_price": Decimal("0.00"),
+                "price": Decimal("0.00"),
+            },
+            {
+                "quantity": 100,
+                "unit_price": Decimal("9999.99"),
+                "price": Decimal("999999.00"),
+            },
+        ]
+
+        for overrides in valid_values:
+            with self.subTest(overrides=overrides):
+                item = self.make_order_item(**overrides)
+                item.refresh_from_db()
+
+                self.assertEqual(item.quantity, overrides["quantity"])
+                self.assertEqual(item.unit_price, overrides["unit_price"])
+                self.assertEqual(item.price, overrides["price"])
+
+                # Allow the next case to reuse the same order/menu item.
+                item.delete()
+
+    def test_deleting_order_deletes_its_items(self):
+        item = self.make_order_item()
+        item_id = item.pk
+
+        self.order.delete()
+
+        self.assertFalse(
+            models.OrderItem.objects.filter(pk=item_id).exists()
+        )
+        self.assertTrue(
+            models.MenuItem.objects.filter(pk=self.menu_item.pk).exists()
+        )
+
+    def test_menu_item_used_in_order_cannot_be_deleted(self):
+        item = self.make_order_item()
+
+        with self.assertRaises(ProtectedError):
+            self.menu_item.delete()
+
+        self.assertTrue(
+            models.MenuItem.objects.filter(pk=self.menu_item.pk).exists()
+        )
+        self.assertTrue(
+            models.OrderItem.objects.filter(pk=item.pk).exists()
+        )
+
+    def test_menu_price_change_preserves_order_item_prices(self):
+        item = self.make_order_item()
+
+        self.menu_item.price = Decimal("20.00")
+        self.menu_item.save(update_fields=["price"])
+        item.refresh_from_db()
+
+        self.assertEqual(item.unit_price, Decimal("15.50"))
+        self.assertEqual(item.price, Decimal("31.00"))
+   
