@@ -111,7 +111,8 @@ class Order(models.Model):
             ),
         ]
 
-
+class OrderItem(models.Model): 
+    pass 
 
 
 
