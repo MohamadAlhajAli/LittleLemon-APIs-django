@@ -208,6 +208,7 @@ class CartModelTests(TestCase):
 
 
 class OrderModelTests(TestCase):
+
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username="customer",
@@ -296,3 +297,70 @@ class OrderModelTests(TestCase):
         self.assertTrue(
             get_user_model().objects.filter(pk=self.crew.pk).exists()
         )
+
+
+class OrderItemModelTests(TestCase): 
+    
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="customer",
+        )
+        self.category = models.Category.objects.create(
+            title="Main courses",
+            slug="main-courses",
+        )
+        self.menu_item = models.MenuItem.objects.create(
+            title="Grilled fish",
+            price=Decimal("15.50"),
+            category=self.category,
+        )
+        self.order = models.Order.objects.create(
+            user=self.user,
+            total=Decimal("31.00"),
+        )
+
+    def make_order_item(self, **overrides):
+        values = {
+            "order": self.order,
+            "menuitem": self.menu_item,
+            "quantity": 2,
+            "unit_price": Decimal("15.50"),
+            "price": Decimal("31.00"),
+        }
+        values.update(overrides)
+        return models.OrderItem.objects.create(**values)
+
+    def test_order_item_can_be_saved_and_loaded(self):
+        item = self.make_order_item()
+
+        saved = models.OrderItem.objects.get(pk=item.pk)
+
+        self.assertEqual(saved.order, self.order)
+        self.assertEqual(saved.menuitem, self.menu_item)
+        self.assertEqual(saved.quantity, 2)
+        self.assertEqual(saved.unit_price, Decimal("15.50"))
+        self.assertEqual(saved.price, Decimal("31.00"))
+        self.assertEqual(self.order.items.get(), saved)
+
+    def test_menu_item_must_be_unique_within_order(self):
+        self.make_order_item()
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self.make_order_item()
+    
+    def test_same_menu_item_can_appear_in_different_orders(self):
+        first_item = self.make_order_item()
+        other_order = models.Order.objects.create(
+            user=self.user,
+            total=Decimal("31.00"),
+        )
+
+        second_item = self.make_order_item(order=other_order)
+
+        self.assertNotEqual(first_item.pk, second_item.pk)
+        self.assertEqual(first_item.menuitem, second_item.menuitem)
+
+   
+
+
