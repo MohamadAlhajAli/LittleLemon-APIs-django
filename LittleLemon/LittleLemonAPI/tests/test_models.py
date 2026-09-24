@@ -381,18 +381,18 @@ class OrderItemModelTests(TestCase):
         self.assertEqual(order.user_id, self.user.pk)
         self.assertEqual(order.total, Decimal("31.00"))
 
-    def test_deleting_order_preserves_both_users(self):
-        order = self.make_order(delivery_crew=self.crew)
-        order_id = order.pk
+    def test_invalid_quantities_and_prices_are_rejected(self):
+        invalid_values = [
+            {"quantity": -1},
+            {"quantity": 0},
+            {"quantity": 101},
+            {"unit_price": Decimal("-0.01")},
+            {"unit_price": Decimal("10000.00")},
+            {"price": Decimal("-0.01")},
+        ]
 
-        order.delete()
-
-        self.assertFalse(
-            models.Order.objects.filter(pk=order_id).exists()
-        )
-        self.assertTrue(
-            get_user_model().objects.filter(pk=self.user.pk).exists()
-        )
-        self.assertTrue(
-            get_user_model().objects.filter(pk=self.crew.pk).exists()
-        )
+        for overrides in invalid_values:
+            with self.subTest(overrides=overrides):
+                with self.assertRaises(IntegrityError):
+                    with transaction.atomic():
+                        self.make_order_item(**overrides)
