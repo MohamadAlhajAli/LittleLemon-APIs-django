@@ -99,15 +99,6 @@ class MenuItemModelTests(TestCase):
         self.assertEqual(str(menu_item), 'Grilled fish')
 
 
-from decimal import Decimal
-
-from django.contrib.auth import get_user_model
-from django.db import IntegrityError, transaction
-from django.test import TestCase
-
-from LittleLemonAPI import models
-
-
 class CartModelTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
@@ -216,4 +207,92 @@ class CartModelTests(TestCase):
         self.assertFalse(models.Cart.objects.filter(pk=cart_id).exists())
 
 
+class OrderModelTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="customer",
+        )
+        self.crew = get_user_model().objects.create_user(
+            username="courier",
+        )
 
+    def make_order(self, **overrides):
+        values = {
+            "user": self.user,
+            "total": Decimal("31.00"),
+        }
+        values.update(overrides)
+        return models.Order.objects.create(**values)
+
+    def test_new_order_has_expected_defaults(self):
+        order = self.make_order()
+        order.refresh_from_db()
+
+        self.assertEqual(order.user_id, self.user.pk)
+        self.assertEqual(order.total, Decimal("31.00"))
+        self.assertFalse(order.status)
+        self.assertIsNone(order.delivery_crew)
+        self.assertEqual(order.date, timezone.localdate())
+
+    def test_order_can_be_assigned_to_delivery_user(self):
+        order = self.make_order(delivery_crew=self.crew)
+        order.refresh_from_db()
+
+        self.assertEqual(order.delivery_crew_id, self.crew.pk)
+        self.assertEqual(self.user.orders.get(pk=order.pk), order)
+        self.assertEqual(
+            self.crew.assigned_orders.get(pk=order.pk),
+            order,
+        )
+
+    def test_zero_and_large_totals_are_supported(self):
+        for amount in (Decimal("0.00"), Decimal("99999900.00")):
+            with self.subTest(amount=amount):
+                order = self.make_order(total=amount)
+                order.refresh_from_db()
+
+                self.assertEqual(order.total, amount)
+
+    def test_total_cannot_be_negative(self):
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self.make_order(total=Decimal("-0.01"))
+
+    def test_order_owner_cannot_be_deleted(self):
+        order = self.make_order()
+
+        with self.assertRaises(ProtectedError):
+            self.user.delete()
+
+        self.assertTrue(
+            models.Order.objects.filter(pk=order.pk).exists()
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.user.pk).exists()
+        )
+
+    def test_deleting_delivery_user_clears_assignment(self):
+        order = self.make_order(delivery_crew=self.crew)
+
+        self.crew.delete()
+        order.refresh_from_db()
+
+        self.assertIsNone(order.delivery_crew)
+        self.assertEqual(order.user_id, self.user.pk)
+        self.assertEqual(order.total, Decimal("31.00"))
+
+    def test_deleting_order_preserves_both_users(self):
+        order = self.make_order(delivery_crew=self.crew)
+        order_id = order.pk
+
+        order.delete()
+
+        self.assertFalse(
+            models.Order.objects.filter(pk=order_id).exists()
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.user.pk).exists()
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.crew.pk).exists()
+        )
