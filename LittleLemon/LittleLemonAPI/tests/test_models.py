@@ -364,3 +364,35 @@ class OrderItemModelTests(TestCase):
    
 
 
+        self.assertTrue(
+            models.Order.objects.filter(pk=order.pk).exists()
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.user.pk).exists()
+        )
+
+    def test_deleting_delivery_user_clears_assignment(self):
+        order = self.make_order(delivery_crew=self.crew)
+
+        self.crew.delete()
+        order.refresh_from_db()
+
+        self.assertIsNone(order.delivery_crew)
+        self.assertEqual(order.user_id, self.user.pk)
+        self.assertEqual(order.total, Decimal("31.00"))
+
+    def test_deleting_order_preserves_both_users(self):
+        order = self.make_order(delivery_crew=self.crew)
+        order_id = order.pk
+
+        order.delete()
+
+        self.assertFalse(
+            models.Order.objects.filter(pk=order_id).exists()
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.user.pk).exists()
+        )
+        self.assertTrue(
+            get_user_model().objects.filter(pk=self.crew.pk).exists()
+        )
