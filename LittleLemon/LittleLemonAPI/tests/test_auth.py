@@ -32,3 +32,26 @@ class RegistrationTests(APITestCase):
         self.assertFalse(user.is_superuser)
         self.assertFalse(user.groups.exists())
         self.assertNotIn("password", response.data)
+
+    def test_registration_without_email_is_rejected(self):
+        payload = {
+            "username": "customer",
+            "password": "Lemon!River82Cloud",
+        }
+
+        response = self.client.post(
+            "/api/users",
+            data=payload,
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("email", response.data)
+        self.assertFalse(
+            get_user_model().objects.filter(
+                username=payload["username"],
+            ).exists()
+        )
